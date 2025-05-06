@@ -6,9 +6,9 @@ import CoverReport from "./components/CoverReport";
 import DetailedReport from "./components/DetailedReport";
 import ExportPDFButton from "./components/ExportPDFButton";
 
-// test
 export default function App() {
   const [dadosPlanilha, setDadosPlanilha] = useState([]);
+  const [mostrarRelatorio, setMostrarRelatorio] = useState(false);
   const [dadosGrupo, setDadosGrupo] = useState({
     administradora: "Não informado",
     valorPremio: 0,
@@ -26,36 +26,30 @@ export default function App() {
 
   const handleDataParsed = (jsonData) => {
     setDadosPlanilha(jsonData);
+    setMostrarRelatorio(false); // O relatório só será exibido após envio
 
     if (jsonData.length > 0) {
       const primeiro = jsonData[0];
+      const valorPremioTotal = jsonData.reduce(
+        (acc, cur) => acc + Number(cur["Pr. Líq. Parc."] || 0),
+        0
+      );
+      const valorRepasseTotal = jsonData.reduce(
+        (acc, cur) => acc + Number(cur["Vl. Repasse"] || 0),
+        0
+      );
 
       setDadosGrupo({
-        // Para SummaryCard
-        administradora: primeiro["Administradora"] || "Não informado",
-        valorPremio: jsonData.reduce(
-          (acc, cur) => acc + Number(cur["Prêmio"] || 0),
-          0
-        ),
-        valorComissao: jsonData.reduce(
-          (acc, cur) => acc + Number(cur["Repasse"] || 0),
-          0
-        ),
-
-        // Para CoverReport
-        produtor: primeiro["Nome do Produtor"] || "Não informado",
+        administradora: primeiro["Produtor"] || "Não informado",
+        valorPremio: valorPremioTotal,
+        valorComissao: valorRepasseTotal,
+        produtor: primeiro["Produtor"] || "Não informado",
         pagamento: primeiro["Dados de Pagamento"] || "Não informado",
         contato: primeiro["Contato"] || "Não informado",
         email: primeiro["Email"] || "Não informado",
         totalApolices: jsonData.length,
-        premio: jsonData.reduce(
-          (acc, cur) => acc + Number(cur["Prêmio"] || 0),
-          0
-        ),
-        repasse: jsonData.reduce(
-          (acc, cur) => acc + Number(cur["Repasse"] || 0),
-          0
-        ),
+        premio: valorPremioTotal,
+        repasse: valorRepasseTotal,
       });
     } else {
       setDadosGrupo({
@@ -77,10 +71,13 @@ export default function App() {
     <>
       <Navbar />
       <main className="container">
-        <UploadCard onDataParsed={handleDataParsed} />
+        <UploadCard
+          onDataParsed={handleDataParsed}
+          mostrarRelatorio={() => setMostrarRelatorio(true)}
+        />
         <SummaryCard dadosGrupo={dadosGrupo} />
 
-        {dadosPlanilha.length > 0 && (
+        {dadosPlanilha.length > 0 && mostrarRelatorio && (
           <>
             <div ref={relatorioRef} className="relatorio-preview">
               <div className="page">

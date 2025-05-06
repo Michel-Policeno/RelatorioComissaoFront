@@ -1,46 +1,73 @@
-import React from 'react';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
-import './ExportPDFButton.css';
+import React, { useState } from "react";
+import "./ExportPDFButton.css";
 
 export default function ExportPDFButton({ targetRef, nomeProdutor }) {
+  const [gerando, setGerando] = useState(false);
+
+  const gerarHTMLRelatorio = () => {
+    const relatorioNode = targetRef?.current;
+    if (!relatorioNode) return "";
+
+    // 🔗 URL estática do CSS global gerado pelo Vite
+    const cssLink = `<link rel="stylesheet" href="../../dist/relatorio-static/index-DCb0Whu3.css">`;
+
+    return `
+      <!DOCTYPE html>
+      <html lang="pt-BR">
+        <head>
+          <meta charset="UTF-8">
+          <title>Relatório de Comissões</title>
+          ${cssLink}
+        </head>
+        <body>
+          ${relatorioNode.innerHTML}
+        </body>
+      </html>
+    `;
+  };
+
   const handleExport = async () => {
+    setGerando(true);
     const input = targetRef?.current;
     if (!input) {
-      console.warn('Elemento de referência não encontrado.');
+      console.warn("Elemento de referência não encontrado.");
+      setGerando(false);
       return;
     }
 
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const pages = input.querySelectorAll('.page');
+    const htmlRelatorio = gerarHTMLRelatorio();
 
-    for (let i = 0; i < pages.length; i++) {
-      const canvas = await html2canvas(pages[i], {
-        scale: 3,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        windowWidth: 1920,
+    try {
+      const response = await fetch("http://localhost:3000/salvaPDF", {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/html",
+        },
+        body: htmlRelatorio,
       });
 
-      const imgData = canvas.toDataURL('image/png');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      if (!response.ok) throw new Error("Falha ao gerar PDF");
 
-      if (i > 0) pdf.addPage();
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `relatorio-${nomeProdutor}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      alert("❌ Erro ao enviar HTML ou baixar PDF:", error);
     }
 
-    const nomeSanitizado = nomeProdutor?.replace(/\s+/g, '_').toLowerCase() || 'comissoes';
-    const dataHoje = new Date().toISOString().slice(0, 10); // formato yyyy-mm-dd
-    const nomeArquivo = `relatorio-${nomeSanitizado}-${dataHoje}.pdf`;
-
-    pdf.save(nomeArquivo);
+    setGerando(false);
   };
 
   return (
     <div className="export-wrapper">
-      <button onClick={handleExport}>
-        📄 Exportar Relatório em PDF
+      <button onClick={handleExport} disabled={gerando}>
+        {gerando ? "⏳ Gerando Relatório..." : "📄 Exportar Relatório em PDF"}
       </button>
     </div>
   );
