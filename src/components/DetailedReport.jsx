@@ -34,6 +34,7 @@ export default function DetailedReport({ dados = [] }) {
             <th>Segurado</th>
             <th>Apólice</th>
             <th>Início Vig.</th>
+            {/* <th>Data Pagamento</th> */}
             <th>Parc.</th>
             <th>Pr. Líq. Parc.</th>
             <th>Vl. Repasse</th>
@@ -59,6 +60,7 @@ export default function DetailedReport({ dados = [] }) {
                 <td>{item["Segurado"] || "-"}</td>
                 <td>{item["Apólice"] || "-"}</td>
                 <td>{dataFormatada}</td>
+                {/* <td>{item["Data Pagamento"] || "-"}</td> */}
                 <td>{item["Parc."] || "-"}</td>
                 <td>
                   R${" "}
