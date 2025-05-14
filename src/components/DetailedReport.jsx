@@ -17,27 +17,31 @@ export default function DetailedReport({ dados = [] }) {
   return (
     <section className="detailed-report" id="pagina-detalhada">
       <header className="report-header">
-        <img
-          src="https://i.postimg.cc/yx0SDj19/logo.png"
-          alt="Logo"
-          className="overlay-logo"
-        />
-        <div>
-          <h3>{produtorNome}</h3>
-          <p className="report-date">Gerado em: {hoje}</p>
+        <div className="logo-box">
+          <img
+            src="https://i.postimg.cc/xCdzWtgG/logo2.png"
+            alt="Logo"
+            className="logo-img"
+          />
         </div>
+        <div className="header-banner">
+          <div className="banner-content">
+            <h3>{produtorNome}</h3>
+            <p className="report-date">Gerado em: {hoje}</p>
+          </div>
+        </div>
+
       </header>
 
       <table className="report-table">
         <thead>
           <tr>
-            <th>Segurado</th>
-            <th>Apólice</th>
-            <th>Início Vig.</th>
+            <th>SEGURADO</th>
+            <th>APÓLICE</th>
+            <th>INÍCIO VIG</th>
+            <th>PRÊMIO LIQ.</th>
+            <th>MILHAGEM</th>
             {/* <th>Data Pagamento</th> */}
-            <th>Parc.</th>
-            <th>Pr. Líq. Parc.</th>
-            <th>Vl. Repasse</th>
           </tr>
         </thead>
         <tbody>
@@ -61,7 +65,7 @@ export default function DetailedReport({ dados = [] }) {
                 <td>{item["Apólice"] || "-"}</td>
                 <td>{dataFormatada}</td>
                 {/* <td>{item["Data Pagamento"] || "-"}</td> */}
-                <td>{item["Parc."] || "-"}</td>
+               
                 <td>
                   R${" "}
                   {Number(item["Pr. Líq. Parc."] || 0).toLocaleString("pt-BR")}
